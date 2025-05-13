@@ -1,25 +1,54 @@
 <template>
-  <div class="d-flex vh-100">
-    <!-- Sidebar -->
-    <nav
-      :class="[
-        'bg-light border-end p-3 d-flex flex-column',
-        isCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded',
-      ]"
+  <div class="flex-grow-1 d-flex flex-column">
+    <!-- Header -->
+    <header
+      class="d-flex justify-content-between align-items-center px-3 bg-white border-bottom"
+      style="height: 58px"
     >
-      <div class="d-flex align-items-center mb-4 position-relative">
-        <img :src="avatarUrl" alt="Avatar" class="rounded-circle" width="32" height="32" />
-        <transition name="fade">
-          <span v-if="!isCollapsed" class="ms-2 fw-medium">{{ workspaceName }}</span>
-        </transition>
+      <div class="d-flex align-items-center h-100 gap-3 space border-end position-relative">
+        <img :src="avatarUrl" alt="Avatar" class="rounded" width="40" height="40" />
+        <span class="ms-2 fw-medium">{{ workspaceName }}</span>
         <button
-          class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0"
+          class="btn btn-sm btn-outline-secondary position-absolute button-close"
           @click="toggleCollapse"
         >
           <font-awesome-icon :icon="isCollapsed ? 'chevron-right' : 'bars'" />
         </button>
       </div>
-
+      <div class="d-flex align-items-center">
+        <button class="btn btn-primary me-2">
+          <font-awesome-icon icon="user-plus" class="me-1" /> Пригласить команду
+        </button>
+        <button class="btn btn-link me-2">
+          <font-awesome-icon icon="bell" />
+        </button>
+        <button class="btn btn-link me-2">
+          <font-awesome-icon icon="folder-open" />
+        </button>
+        <button class="btn btn-link me-2">
+          <font-awesome-icon icon="question-circle" />
+        </button>
+        <button class="btn btn-link me-2">
+          <font-awesome-icon icon="search" />
+        </button>
+        <button class="btn btn-link me-2">
+          <font-awesome-icon icon="magic" />
+        </button>
+        <button class="btn btn-link me-2">
+          <font-awesome-icon icon="th-large" />
+        </button>
+        <img :src="userAvatar" alt="Avatar" class="rounded-circle" width="32" height="32" />
+      </div>
+    </header>
+  </div>
+  <div class="d-flex content">
+    <!-- Sidebar -->
+    <nav
+      :class="[
+        'bg-light border-end p-3 d-flex flex-column sidebar',
+        isCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded',
+      ]"
+    >
       <div v-if="!isCollapsed" class="mb-3">
         <input v-model="search" class="form-control" placeholder="Поиск" />
       </div>
@@ -40,7 +69,7 @@
         <li>
           <a href="#" class="nav-link text-dark d-flex align-items-center">
             <font-awesome-icon icon="folder-open" class="me-2" />
-            <span v-if="!isCollapsed">Все проекты</span>
+            <span v-if="!isCollapsed">Аналитика</span>
           </a>
         </li>
         <li>
@@ -50,7 +79,7 @@
             @click.prevent="toggleSubmenu = !toggleSubmenu"
           >
             <font-awesome-icon icon="folder" class="me-2" />
-            <span v-if="!isCollapsed">Проекты</span>
+            <span v-if="!isCollapsed">Доски</span>
             <font-awesome-icon
               :icon="toggleSubmenu ? 'chevron-up' : 'chevron-down'"
               class="ms-auto"
@@ -58,9 +87,9 @@
           </a>
           <ul v-if="toggleSubmenu" class="nav flex-column ms-4 mt-1">
             <li>
-              <a href="#" class="nav-link text-dark d-flex align-items-center">
+              <a href="#" class="nav text-dark d-flex align-items-center">
                 <font-awesome-icon icon="file" class="me-2" />
-                <span v-if="!isCollapsed">Проект</span>
+                <span v-if="!isCollapsed">123</span>
               </a>
             </li>
           </ul>
@@ -79,54 +108,9 @@
     </nav>
 
     <!-- Main Area -->
-    <div class="flex-grow-1 d-flex flex-column">
-      <!-- Header -->
-      <header
-        class="d-flex justify-content-between align-items-center px-3 bg-white border-bottom"
-        style="height: 56px"
-      >
-        <div class="d-flex align-items-center">
-          <button class="btn btn-outline-secondary me-2" @click="toggleCollapse">
-            <font-awesome-icon icon="bars" />
-          </button>
-          <button class="btn btn-outline-secondary me-2">
-            <font-awesome-icon icon="th" />
-          </button>
-          <button class="btn btn-primary">
-            <font-awesome-icon icon="tasks" class="me-1" /> Задачи
-          </button>
-        </div>
-        <div class="d-flex align-items-center">
-          <button class="btn btn-link me-2">
-            <font-awesome-icon icon="user-plus" class="me-1" /> Пригласить команду
-          </button>
-          <button class="btn btn-link me-2">
-            <font-awesome-icon icon="bell" />
-          </button>
-          <button class="btn btn-link me-2">
-            <font-awesome-icon icon="folder-open" />
-          </button>
-          <button class="btn btn-link me-2">
-            <font-awesome-icon icon="question-circle" />
-          </button>
-          <button class="btn btn-link me-2">
-            <font-awesome-icon icon="search" />
-          </button>
-          <button class="btn btn-link me-2">
-            <font-awesome-icon icon="magic" />
-          </button>
-          <button class="btn btn-link me-2">
-            <font-awesome-icon icon="th-large" />
-          </button>
-          <img :src="userAvatar" alt="Avatar" class="rounded-circle" width="32" height="32" />
-        </div>
-      </header>
-
-      <!-- Content -->
-      <main class="flex-grow-1 bg-light overflow-auto">
-        <slot />
-      </main>
-    </div>
+    <main class="d-flex flex-grow-1 bg-light main">
+      <slot />
+    </main>
   </div>
 </template>
 
@@ -135,9 +119,11 @@ import { ref } from 'vue'
 
 const isCollapsed = ref(false)
 const toggleSubmenu = ref(false)
-const workspaceName = 'байтбригада'
-const avatarUrl = '' // URL аватара
-const userAvatar = ''
+const workspaceName = 'тест'
+const avatarUrl =
+  'https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png?20210521171500' // URL аватара
+const userAvatar =
+  'https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png?20210521171500'
 const search = ref('')
 
 function toggleCollapse() {
@@ -146,6 +132,27 @@ function toggleCollapse() {
 </script>
 
 <style scoped>
+.sidebar {
+  height: calc(100dvh - 58px);
+  flex-shrink: 0;
+}
+
+.main {
+  height: calc(100dvh - 58px);
+  overflow-x: auto;
+}
+
+.button-close {
+  position: relative;
+  right: 16px;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+.space {
+  width: 224px;
+  flex-shrink: 0;
+}
 .sidebar-expanded {
   width: 240px;
 }

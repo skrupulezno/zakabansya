@@ -17,7 +17,9 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { faSpinner, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import {
+  faPenToSquare,
   faBars,
+  faTrash,
   faTasks,
   faList,
   faFolderOpen,
@@ -35,16 +37,21 @@ import {
   faChevronRight,
   faChevronDown,
   faChevronUp,
+  faWrench,
+  faGripVertical,
 } from '@fortawesome/free-solid-svg-icons'
 
 // Регистрируем все иконки:
 library.add(
+  faWrench,
+  faPenToSquare,
   faBars,
   faTasks,
   faList,
   faFolderOpen,
   faFolder,
   faFile,
+  faTrash,
   faPlusSquare,
   faArchive,
   faTh,
@@ -59,6 +66,7 @@ library.add(
   faChevronUp,
   faSpinner,
   faPlus,
+  faGripVertical,
 )
 
 const app = createApp(App)

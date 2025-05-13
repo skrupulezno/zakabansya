@@ -32,4 +32,49 @@ router.get("/:columnId/cards", auth, async (req, res) => {
   }
 });
 
+router.put("/:columnId", auth, async (req, res) => {
+  try {
+    const column = await service.updateColumn({
+      column_id: Number(req.params.columnId),
+      ...req.body,
+    });
+
+    req.app
+      .get("io")
+      .to(`board-${column.board_id}`)
+      .emit("column:update", { column });
+
+    res.json(column);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+router.delete("/:columnId", auth, async (req, res) => {
+  try {
+    const { column_id, board_id } = await service.deleteColumn({
+      column_id: Number(req.params.columnId),
+    });
+
+    req.app
+      .get("io")
+      .to(`board-${board_id}`)
+      .emit("column:delete", { column_id });
+
+    res.json({ success: true });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+router.patch("/reorder", auth, async (req, res) => {
+  try {
+    // ожидаем [{ column_id, position }, …]
+    const columns = await service.reorderColumns(req.body);
+    res.json(columns); // вернём новый порядок
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
 export default router;
