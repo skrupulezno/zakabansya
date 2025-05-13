@@ -85,11 +85,10 @@ export const moveCard = async ({
         ? max + 1
         : Math.max(0, new_position);
 
-    /* 3. Если колонка *не* меняется, просто переставляем в пределах одной колонки */
+    /* 3. Если колонка *не* меняется, переставляем в пределах одной колонки */
     if (old_column_id === new_column_id) {
       if (targetPosition !== old_position) {
         if (targetPosition > old_position) {
-          // сдвигаем всё между old+1 … target вниз на 1
           await client.query(
             `UPDATE cards
                SET position = position - 1
@@ -98,7 +97,6 @@ export const moveCard = async ({
             [old_column_id, old_position, targetPosition]
           );
         } else {
-          // сдвигаем всё между target … old-1 вверх на 1
           await client.query(
             `UPDATE cards
                SET position = position + 1
@@ -117,8 +115,7 @@ export const moveCard = async ({
          WHERE column_id = $1 AND position > $2`,
         [old_column_id, old_position]
       );
-
-      // 4b. «Раздвигаем» целевую колонну
+      // 4b. «Раздвигаем» целевую колонку
       await client.query(
         `UPDATE cards
            SET position = position + 1
@@ -127,15 +124,23 @@ export const moveCard = async ({
       );
     }
 
-    /* 5. Сама карточка */
+    /* 5. Обновляем карточку и сразу возвращаем board_id через JOIN на board_columns */
     const {
       rows: [updated],
     } = await client.query(
-      `UPDATE cards
+      `
+      UPDATE cards
          SET column_id = $2,
              position  = $3
-       WHERE card_id   = $1
-       RETURNING *`,
+        FROM board_columns AS bc
+       WHERE cards.card_id   = $1
+         AND bc.column_id     = $2
+       RETURNING
+         cards.card_id,
+         cards.column_id,
+         cards.position,
+         bc.board_id AS board_id
+      `,
       [card_id, new_column_id, targetPosition]
     );
 

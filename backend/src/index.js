@@ -58,10 +58,12 @@ io.on("connection", (socket) => {
   console.log("WS connected:", socket.id);
 
   socket.on("joinBoard", (boardId) => {
+    console.log(`User ${socket.id}: join board-${boardId}`);
     socket.join(`board-${boardId}`);
   });
 
   socket.on("leaveBoard", (boardId) => {
+    console.log(`User ${socket.id}: leave board-${boardId}`);
     socket.leave(`board-${boardId}`);
   });
 

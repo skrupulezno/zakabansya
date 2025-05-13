@@ -5,7 +5,7 @@
     <div class="board-columns">
       <div v-for="col in boardStore.board.columns" :key="col.column_id" class="column">
         <h3>{{ col.name }}</h3>
-
+        <el-button size="small" @click="addCard(col.column_id)"> + Добавить </el-button>
         <draggable
           class="card-list"
           :list="col.cards"
@@ -19,8 +19,6 @@
             </div>
           </template>
         </draggable>
-
-        <el-button size="small" @click="addCard(col.column_id)"> + Добавить </el-button>
       </div>
     </div>
   </div>
@@ -31,28 +29,32 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount } from 'vue'
+import { onMounted, onBeforeUnmount, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import draggable from 'vuedraggable'
 
 import Card from '@/components/Card.vue'
 import { socket } from '@/api/socket'
 import { useBoardsStore } from '@/stores/boards'
-import { useCardsStore } from '@/stores/cards'
+import { createCard, moveCard } from '@/services/card.service'
 import { Loading } from '@element-plus/icons-vue'
 
 /* ——— stores & route ——— */
 const boardStore = useBoardsStore()
-const cardsStore = useCardsStore()
 const boardId = Number(useRoute().params.id)
+
+const socketId = ref<string | undefined>('')
 
 /* ——— lifecycle ——— */
 onMounted(async () => {
   await boardStore.fetchBoard(boardId)
-  await cardsStore.fetchBoard(boardId)
 
   socket.connect()
   socket.emit('joinBoard', boardId)
+
+  socket.on('connect', () => {
+    socketId.value = socket.id
+  })
 
   /* realtime: новый столбец */
   socket.on('column:add', (p: any) => {
@@ -66,6 +68,8 @@ onMounted(async () => {
 
   /* realtime: перемещение карточки */
   socket.on('card:move', (d: any) => {
+    console.log('card:move')
+
     const moved = boardStore.board?.columns
       .flatMap((c) => c.cards)
       .find((c) => c.card_id === d.card_id)
@@ -91,13 +95,9 @@ function onCardChange(evt: any, toColumnId: number) {
 
   const card = info.element
   const newPos = info.newIndex
-  cardsStore.moveCard(card.card_id, toColumnId, newPos)
+  console.log(socketId.value)
 
-  socket.emit('card:move', {
-    card_id: card.card_id,
-    to_column_id: toColumnId,
-    new_position: newPos,
-  })
+  moveCard(card.card_id, toColumnId, newPos, socketId.value)
 }
 
 /* ——— add card ——— */
@@ -105,14 +105,9 @@ async function addCard(this: any, columnId: number) {
   const title = prompt('Название карточки')
   if (!title) return
 
-  const newCard = await cardsStore.createCard(columnId, { title })
+  const newCard = await createCard(columnId, title, socketId.value)
   boardStore.addLocalCard(newCard, columnId)
   this.$toast.success('Карточка создана')
-
-  socket.emit('card:add', {
-    column_id: columnId,
-    card: newCard,
-  })
 }
 </script>
 

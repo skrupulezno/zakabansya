@@ -23,7 +23,7 @@ const form = reactive({ email: '', password: '' })
 const auth = useAuthStore()
 const router = useRouter()
 
-async function onSubmit() {
+async function onSubmit(this: any) {
   try {
     await auth.login(form)
     this.$toast.success('Вход выполнен')
