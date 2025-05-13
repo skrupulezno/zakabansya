@@ -37,3 +37,11 @@ export const getMe = async (user_id) => {
   if (!user) throw new Error("User not found");
   return user;
 };
+
+export const getById = async (user_id) => {
+  return repo.getUserById(user_id);
+};
+
+export const getAll = async () => {
+  return repo.getAllUsers();
+};

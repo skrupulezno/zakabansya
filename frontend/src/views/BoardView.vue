@@ -1,31 +1,43 @@
 <template>
-  <div v-if="boardStore.board" class="board-view">
-    <h2>{{ boardStore.board.board.title }}</h2>
-
-    <div class="board-columns">
-      <div v-for="col in boardStore.board.columns" :key="col.column_id" class="column">
-        <h3>{{ col.name }}</h3>
-        <el-button size="small" @click="addCard(col.column_id)"> + Добавить </el-button>
-        <draggable
-          class="card-list"
-          :list="col.cards"
-          :group="{ name: 'cards', pull: true, put: true }"
-          item-key="card_id"
-          @change="(evt) => onCardChange(evt, col.column_id)"
+  <Layout>
+    <div v-if="boardStore.board" class="board-view p-3">
+      <div class="board-columns d-flex gap-3">
+        <div
+          v-for="col in boardStore.board.columns"
+          :key="col.column_id"
+          class="column"
+          style="width: 268px"
         >
-          <template #item="{ element }">
-            <div class="draggable-card">
-              <Card :card="element" />
-            </div>
-          </template>
-        </draggable>
+          <div class="">
+            <h5 class="column bg-white p-2 px-3 w-100 rounded mb-2">{{ col.name }}</h5>
+            <button
+              class="btn btn-m btn-outline-primary w-100 mb-2"
+              @click="addCard(col.column_id)"
+            >
+              <font-awesome-icon icon="plus" /> Добавить
+            </button>
+            <draggable
+              class="card-list min-vh-50"
+              :list="col.cards"
+              :group="{ name: 'cards', pull: true, put: true }"
+              item-key="card_id"
+              @change="(evt) => onCardChange(evt, col.column_id)"
+            >
+              <template #item="{ element }">
+                <div class="draggable-card mb-2">
+                  <Card :card="element" />
+                </div>
+              </template>
+            </draggable>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div v-else class="loading">
-    <el-icon><Loading /></el-icon>&nbsp;Загружаем…
-  </div>
+    <div v-else class="loading text-center py-5">
+      <font-awesome-icon icon="spinner" spin />&nbsp;Загружаем…
+    </div>
+  </Layout>
 </template>
 
 <script setup lang="ts">
@@ -37,7 +49,8 @@ import Card from '@/components/Card.vue'
 import { socket } from '@/api/socket'
 import { useBoardsStore } from '@/stores/boards'
 import { createCard, moveCard } from '@/services/card.service'
-import { Loading } from '@element-plus/icons-vue'
+
+import Layout from '@/components/Layout.vue'
 
 /* ——— stores & route ——— */
 const boardStore = useBoardsStore()
@@ -56,20 +69,15 @@ onMounted(async () => {
     socketId.value = socket.id
   })
 
-  /* realtime: новый столбец */
   socket.on('column:add', (p: any) => {
     boardStore.addLocalColumn(p.column)
   })
 
-  /* realtime: новая карточка */
   socket.on('card:add', (p: any) => {
     boardStore.addLocalCard(p.card, p.column_id)
   })
 
-  /* realtime: перемещение карточки */
   socket.on('card:move', (d: any) => {
-    console.log('card:move')
-
     const moved = boardStore.board?.columns
       .flatMap((c) => c.cards)
       .find((c) => c.card_id === d.card_id)
@@ -88,25 +96,22 @@ onBeforeUnmount(() => {
 /* ——— drag & drop ——— */
 function onCardChange(evt: any, toColumnId: number) {
   const { added, moved } = evt
-
-  // карточка перемещена или добавлена
   const info = added || moved
   if (!info) return
 
   const card = info.element
   const newPos = info.newIndex
-  console.log(socketId.value)
-
   moveCard(card.card_id, toColumnId, newPos, socketId.value)
 }
 
 /* ——— add card ——— */
-async function addCard(this: any, columnId: number) {
+async function addCard(columnId: number) {
   const title = prompt('Название карточки')
   if (!title) return
 
   const newCard = await createCard(columnId, title, socketId.value)
   boardStore.addLocalCard(newCard, columnId)
+  // Предполагается, что у вас есть toast-плагин
   this.$toast.success('Карточка создана')
 }
 </script>
@@ -114,23 +119,14 @@ async function addCard(this: any, columnId: number) {
 <style scoped>
 .board-columns {
   display: flex;
-  gap: 24px;
 }
 .column {
-  background: #f5f7fa;
-  padding: 12px;
-  border-radius: 4px;
-  width: 250px;
+  background: #f8f9fa;
 }
 .loading {
-  text-align: center;
-  padding: 40px;
-}
-.card-list {
-  min-height: 60px;
+  font-size: 1.2rem;
 }
 .draggable-card {
-  margin-bottom: 8px;
-  cursor: move;
+  cursor: grab;
 }
 </style>

@@ -1,0 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
+
+.manrope-bold {
+  font-family: 'Manrope', sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.manrope-regular {
+  font-family: 'Manrope', sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+}
+
+body {
+  font-family: 'Manrope';
+}
+
+* {
+  margin: 0;
+}
+
+/* Универсальный размер иконок */
+.el-icon,
+.el-icon svg,
+.el-button .el-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.sidebar-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+}
+
+.el-aside {
+  overflow-x: hidden !important;
+}

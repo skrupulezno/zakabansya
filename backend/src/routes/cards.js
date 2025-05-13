@@ -60,4 +60,47 @@ router.put("/:id/move", auth, async (req, res) => {
   }
 });
 
+router.put("/:id", auth, async (req, res) => {
+  try {
+    const dto = {
+      card_id: Number(req.params.id),
+      user_id: req.user.user_id,
+      ...req.body,
+    };
+    const card = await service.updateCard(dto);
+    if (!card) {
+      return res.status(404).json({ error: "Card not found or no access" });
+    }
+    req.app
+      .get("io")
+      .to(`board-${card.board_id}`)
+      .emit("card:update", { card_id: card.card_id, card });
+    res.json(card);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// Удаление карточки (soft delete через archived_at)
+router.delete("/:id", auth, async (req, res) => {
+  try {
+    const dto = {
+      card_id: Number(req.params.id),
+      user_id: req.user.user_id,
+    };
+    const success = await service.deleteCard(dto);
+    if (!success) {
+      return res.status(404).json({ error: "Card not found or no access" });
+    }
+    // уведомляем по WebSocket
+    req.app
+      .get("io")
+      .to(`board-${req.body.board_id}`) // или храните board_id в DTO/сервисе
+      .emit("card:delete", { card_id: dto.card_id });
+    res.status(204).end();
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 export default router;

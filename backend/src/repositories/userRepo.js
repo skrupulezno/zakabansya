@@ -27,3 +27,28 @@ export const findById = async (user_id) => {
   );
   return rows[0];
 };
+
+/**
+ * Получить пользователя по ID (без пароля!).
+ */
+export const getUserById = async (user_id) => {
+  const { rows } = await pool.query(
+    `SELECT user_id, name, email, avatar_url, created_at
+       FROM users
+      WHERE user_id = $1`,
+    [user_id]
+  );
+  return rows[0] || null;
+};
+
+/**
+ * Список всех пользователей (для упоминаний, шаринга и т.п.).
+ */
+export const getAllUsers = async () => {
+  const { rows } = await pool.query(
+    `SELECT user_id, name, email, avatar_url, created_at
+       FROM users
+      ORDER BY name`
+  );
+  return rows;
+};

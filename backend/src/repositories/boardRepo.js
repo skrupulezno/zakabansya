@@ -82,3 +82,52 @@ LEFT JOIN cards c ON c.column_id = col.column_id
 
   return { board, columns, members };
 };
+
+export const updateBoard = async ({
+  board_id,
+  owner_id,
+  title,
+  description,
+  visibility,
+}) => {
+  const fields = [];
+  const vals = [];
+  let idx = 1;
+
+  if (title !== undefined) {
+    fields.push(`title = $${idx++}`);
+    vals.push(title);
+  }
+  if (description !== undefined) {
+    fields.push(`description = $${idx++}`);
+    vals.push(description);
+  }
+  if (visibility !== undefined) {
+    fields.push(`visibility = $${idx++}`);
+    vals.push(visibility);
+  }
+  if (fields.length === 0) {
+    throw new Error("No fields to update");
+  }
+
+  vals.push(board_id, owner_id);
+
+  const query = `
+    UPDATE boards
+       SET ${fields.join(", ")}
+     WHERE board_id = $${idx++} AND owner_id = $${idx}
+  RETURNING *;
+  `;
+  const { rows } = await pool.query(query, vals);
+  return rows[0] || null;
+};
+
+export const deleteBoard = async (board_id, owner_id) => {
+  const { rowCount } = await pool.query(
+    `UPDATE boards
+        SET archived_at = NOW()
+      WHERE board_id = $1 AND owner_id = $2;`,
+    [board_id, owner_id]
+  );
+  return rowCount > 0;
+};

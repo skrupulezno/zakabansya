@@ -6,14 +6,41 @@ const router = express.Router();
 
 /**
  * GET /api/users/me
- * Возвращает информацию о текущем пользователе (по JWT).
+ * Инфо о текущем пользователе
  */
 router.get("/me", auth, async (req, res) => {
   try {
-    const user = await userService.getMe(req.user.user_id);
+    const user = await userService.getById(req.user.user_id);
     res.json(user);
   } catch (e) {
     res.status(404).json({ error: e.message });
+  }
+});
+
+/**
+ * GET /api/users/:id
+ * Инфо о пользователе по ID
+ */
+router.get("/:id", auth, async (req, res) => {
+  try {
+    const user = await userService.getById(Number(req.params.id));
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json(user);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+/**
+ * GET /api/users
+ * Список всех пользователей
+ */
+router.get("/", auth, async (_req, res) => {
+  try {
+    const users = await userService.getAll();
+    res.json(users);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
 });
 

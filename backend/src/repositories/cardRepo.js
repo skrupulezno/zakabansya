@@ -153,3 +153,72 @@ export const moveCard = async ({
     client.release();
   }
 };
+
+/**
+ * UPDATE карточки по полям, которые передали в dto.
+ */
+export const updateCard = async ({ card_id, user_id, ...fields }) => {
+  const setters = [];
+  const vals = [];
+  let idx = 1;
+
+  for (const [key, value] of Object.entries(fields)) {
+    if (value === undefined) continue;
+    setters.push(`${key} = $${idx++}`);
+    vals.push(value);
+  }
+  if (!setters.length) {
+    throw new Error("No fields to update");
+  }
+  // Проверка прав: присоеденяем к доске через колонку
+  // Для простоты: проверяем, что карточка принадлежит доске, где user — владелец
+  const query = `
+    WITH c AS (
+      SELECT card_id, column_id
+      FROM cards
+      WHERE card_id = $${idx}
+    ), b AS (
+      SELECT b.board_id
+      FROM board_columns col
+      JOIN boards b ON b.board_id = col.board_id
+      JOIN c ON c.column_id = col.column_id
+      WHERE b.owner_id = $${idx + 1}
+    )
+    UPDATE cards
+      SET ${setters.join(", ")}
+    FROM c, b
+    WHERE cards.card_id = c.card_id
+    RETURNING cards.*;
+  `;
+  vals.push(card_id, user_id);
+
+  const { rows } = await pool.query(query, vals);
+  return rows[0] || null;
+};
+
+/**
+ * Мягкое удаление карточки, если пользователь — владелец доски.
+ */
+export const deleteCard = async ({ card_id, user_id }) => {
+  const { rowCount } = await pool.query(
+    `
+    WITH c AS (
+      SELECT card_id, column_id
+      FROM cards
+      WHERE card_id = $1
+    ), b AS (
+      SELECT 1
+      FROM board_columns col
+      JOIN boards b ON b.board_id = col.board_id
+      JOIN c ON c.column_id = col.column_id
+      WHERE b.owner_id = $2
+    )
+    UPDATE cards
+      SET archived_at = NOW()
+    FROM b
+    WHERE cards.card_id = $1
+    `,
+    [card_id, user_id]
+  );
+  return rowCount > 0;
+};
