@@ -33,7 +33,7 @@ const issueToken = (user) =>
   );
 
 export const getMe = async (user_id) => {
-  const user = await userRepo.findById(user_id);
+  const user = await repo.findById(user_id);
   if (!user) throw new Error("User not found");
   return user;
 };

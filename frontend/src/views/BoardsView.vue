@@ -5,8 +5,8 @@
   <el-divider></el-divider>
   <ul class="boards-list">
     <li v-for="board in boardsStore.boards" :key="board.id">
-      <router-link :to="`/boards/${board.id}`">
-        <el-card>{{ board.name }}</el-card>
+      <router-link :to="`/boards/${board.board_id}`">
+        <el-card>{{ board.title }}</el-card>
       </router-link>
     </li>
   </ul>
@@ -14,11 +14,9 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useToast } from 'vue-toastification'
 import { useBoardsStore } from '@/stores/boards'
 
 const boardsStore = useBoardsStore()
-const toast = useToast()
 
 onMounted(() => {
   boardsStore.fetchBoards()
@@ -29,9 +27,9 @@ async function addBoard() {
   if (name) {
     try {
       await boardsStore.createBoard(name)
-      toast.success('Доска создана')
+      this.$toast.success('Доска создана')
     } catch {
-      toast.error('Ошибка создания доски')
+      this.$toast.error('Ошибка создания доски')
     }
   }
 }

@@ -17,21 +17,19 @@ V<!-- src/views/LoginView.vue -->
 <script setup lang="ts">
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { useToast } from 'vue-toastification'
 import { useAuthStore } from '@/stores/auth'
 
 const form = reactive({ email: '', password: '' })
 const auth = useAuthStore()
-const toast = useToast()
 const router = useRouter()
 
 async function onSubmit() {
   try {
     await auth.login(form)
-    toast.success('Вход выполнен')
-    router.push('/boards')
+    this.$toast.success('Вход выполнен')
+    router.push('/')
   } catch (err) {
-    toast.error('Ошибка при входе')
+    this.$toast.error('Ошибка при входе')
   }
 }
 </script>

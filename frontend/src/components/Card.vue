@@ -1,10 +1,10 @@
 <!-- src/components/Card.vue -->
 <template>
-  <el-card class="kanban-card">{{ props.card.title }}</el-card>
+  <el-card class="kanban-card">{{ card.title }}</el-card>
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ card: { id: string; title: string } }>()
+const props = defineProps<{ card: { card_id: number; title: string } }>()
 </script>
 
 <style scoped>

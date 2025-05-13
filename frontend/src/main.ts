@@ -16,5 +16,9 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 app.use(ElementPlus)
-app.use(Toast, { position: 'top', timeout: 3000 })
+app.use(Toast, {
+  transition: 'Vue-Toastification__bounce',
+  maxToasts: 20,
+  newestOnTop: true,
+})
 app.mount('#app')

@@ -8,7 +8,7 @@ import BoardView from '@/views/BoardView.vue'
 const routes = [
   { path: '/login', component: LoginView },
   { path: '/register', component: RegisterView },
-  { path: '/boards', component: BoardsView, meta: { requiresAuth: true } },
+  { path: '/', component: BoardsView, meta: { requiresAuth: true } },
   { path: '/boards/:id', component: BoardView, meta: { requiresAuth: true } },
 ]
 
@@ -26,7 +26,7 @@ router.beforeEach((to, from, next) => {
   }
   // Если авторизован, перенаправляем со /login или /register на /boards
   if ((to.path === '/login' || to.path === '/register') && isAuth) {
-    return next('/boards')
+    return next('/')
   }
   next()
 })

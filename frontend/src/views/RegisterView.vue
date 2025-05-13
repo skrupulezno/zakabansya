@@ -20,21 +20,19 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { useToast } from 'vue-toastification'
 import { useAuthStore } from '@/stores/auth'
 
 const form = reactive({ name: '', email: '', password: '' })
 const auth = useAuthStore()
-const toast = useToast()
 const router = useRouter()
 
 async function onSubmit() {
   try {
     await auth.register(form)
-    toast.success('Регистрация прошла успешно')
-    router.push('/boards')
+    this.$toast.success('Регистрация прошла успешно')
+    router.push('/')
   } catch (err) {
-    toast.error('Ошибка при регистрации')
+    this.$toast.error('Ошибка при регистрации')
   }
 }
 </script>
