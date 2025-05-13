@@ -16,6 +16,16 @@ export const createCard = async ({
   return rows[0];
 };
 
+export const listCardsByColumn = async (column_id) => {
+  const { rows } = await pool.query(
+    `SELECT * FROM cards
+      WHERE column_id = $1
+      ORDER BY position`,
+    [column_id]
+  );
+  return rows;
+};
+
 export const moveCard = async ({
   card_id,
   new_column_id,

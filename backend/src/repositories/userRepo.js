@@ -17,3 +17,13 @@ export const create = async ({ name, email, passwordHash }) => {
   );
   return rows[0];
 };
+
+export const findById = async (user_id) => {
+  const { rows } = await pool.query(
+    `SELECT user_id, name, email, avatar_url, created_at
+       FROM users
+      WHERE user_id = $1`,
+    [user_id]
+  );
+  return rows[0];
+};

@@ -1,0 +1,274 @@
+openapi: 3.0.3
+info:
+  title: Kanban Board API
+  version: 1.0.2
+  description: |
+    REST API для канбан‑доски. Все защищённые маршруты требуют JWT‑токен
+    в заголовке `Authorization: Bearer <token>`.
+servers:
+  - url: http://localhost:3000/api
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+      example: { error: "Invalid token" }
+
+    Token:
+      type: object
+      properties:
+        token: { type: string }
+      example: { token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }
+
+    User:
+      type: object
+      properties:
+        user_id:   { type: integer }
+        name:      { type: string }
+        email:     { type: string }
+        avatar_url:{ type: string }
+        created_at:{ type: string, format: date-time }
+
+    Visibility:
+      type: string
+      enum: [private, team, public]
+    Role:
+      type: string
+      enum: [owner, member, observer]
+    Priority:
+      type: string
+      enum: [low, medium, high, critical]
+
+    Board:
+      type: object
+      properties:
+        board_id:   { type: integer }
+        title:      { type: string }
+        description:{ type: string }
+        owner_id:   { type: integer }
+        visibility: { $ref: '#/components/schemas/Visibility' }
+        created_at: { type: string, format: date-time }
+        archived_at:{ type: string, format: date-time }
+
+    Column:
+      type: object
+      properties:
+        column_id: { type: integer }
+        board_id:  { type: integer }
+        name:      { type: string }
+        position:  { type: integer }
+
+    Card:
+      type: object
+      properties:
+        card_id:   { type: integer }
+        column_id: { type: integer }
+        title:     { type: string }
+        description:{ type: string }
+        position:  { type: integer }
+        due_date:  { type: string, format: date }
+        priority:  { $ref: '#/components/schemas/Priority' }
+        created_at:{ type: string, format: date-time }
+        archived_at:{ type: string, format: date-time }
+
+responses:
+  BadRequest:
+    description: Bad Request
+    content:
+      application/json:
+        schema: { $ref: '#/components/schemas/Error' }
+  NotFound:
+    description: Not Found
+    content:
+      application/json:
+        schema: { $ref: '#/components/schemas/Error' }
+
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Регистрация
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name:  { type: string }
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Token' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Логин
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+      responses:
+        '200': { description: JWT, content: { application/json: { schema: { $ref: '#/components/schemas/Token' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /boards:
+    get:
+      tags: [Boards]
+      summary: Список досок
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Board' } } } } }
+    post:
+      tags: [Boards]
+      summary: Создать доску
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title: { type: string }
+                description: { type: string }
+                visibility: { $ref: '#/components/schemas/Visibility' }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Board' } } } }
+
+  /boards/{boardId}:
+    parameters:
+      - name: boardId
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Boards]
+      summary: Получить доску
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Board' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Boards]
+      summary: Обновить доску
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                description: { type: string }
+                visibility: { $ref: '#/components/schemas/Visibility' }
+      responses:
+        '200': { description: Updated, content: { application/json: { schema: { $ref: '#/components/schemas/Board' } } } }
+    delete:
+      tags: [Boards]
+      summary: Удалить доску
+      responses:
+        '204': { description: Deleted }
+
+  /boards/{boardId}/full:
+    parameters:
+      - name: boardId
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Boards]
+      summary: Полная доска (колонки, карточки, участники)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  board:   { $ref: '#/components/schemas/Board' }
+                  columns:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: '#/components/schemas/Column'
+                        - type: object
+                          properties:
+                            cards:
+                              type: array
+                              items: { $ref: '#/components/schemas/Card' }
+                  members:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        user_id: { type: integer }
+                        name:    { type: string }
+                        avatar_url: { type: string }
+                        role:    { $ref: '#/components/schemas/Role' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /columns:
+    post:
+      tags: [Columns]
+      summary: Создать колонку
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [board_id, name]
+              properties:
+                board_id: { type: integer }
+                name: { type: string }
+                position: { type: integer }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Column' } } } }
+
+  /columns/{boardId}:
+    parameters:
+      - name: boardId
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Columns]
+      summary: Колонки доски
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Column' } } } } }
+
+  /columns/{columnId}/cards:
+    parameters:
+      - name: columnId
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Cards]
+      summary: Карточки колонки
+      responses:
+        '200':
+          description: Array of cards
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Card' }

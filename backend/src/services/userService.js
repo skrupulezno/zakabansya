@@ -31,3 +31,9 @@ const issueToken = (user) =>
     process.env.JWT_SECRET,
     { expiresIn: "1d" }
   );
+
+export const getMe = async (user_id) => {
+  const user = await userRepo.findById(user_id);
+  if (!user) throw new Error("User not found");
+  return user;
+};

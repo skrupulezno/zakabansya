@@ -7,11 +7,12 @@ CREATE TYPE priority_enum   AS ENUM ('low', 'medium', 'high', 'critical');
 
 /* --- Пользователи --- */
 CREATE TABLE users (
-    user_id     SERIAL PRIMARY KEY,
-    name        VARCHAR(255)        NOT NULL,
-    email       VARCHAR(255)        NOT NULL UNIQUE,
-    avatar_url  TEXT,
-    created_at  TIMESTAMPTZ         NOT NULL DEFAULT NOW()
+    user_id        SERIAL PRIMARY KEY,
+    name           VARCHAR(255)        NOT NULL,
+    email          VARCHAR(255)        NOT NULL UNIQUE,
+    password_hash  TEXT                NOT NULL,
+    avatar_url     TEXT,
+    created_at     TIMESTAMPTZ         NOT NULL DEFAULT NOW()
 );
 
 /* --- Доски --- */

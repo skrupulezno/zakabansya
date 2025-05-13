@@ -2,15 +2,18 @@ import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import dotenv from "dotenv";
-dotenv.config();
 
 import authRoutes from "./routes/auth.js";
 import boardRoutes from "./routes/boards.js";
 import columnRoutes from "./routes/columns.js";
 import cardRoutes from "./routes/cards.js";
+import userRoutes from "./routes/users.js";
 
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
+
+dotenv.config();
+
 const swaggerDocument = YAML.load("swagger.yaml");
 
 const app = express();
@@ -23,6 +26,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/boards", boardRoutes);
 app.use("/api/columns", columnRoutes);
 app.use("/api/cards", cardRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 io.on("connection", (socket) => {

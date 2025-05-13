@@ -21,4 +21,18 @@ router.get("/", auth, async (req, res) => {
   res.json(boards);
 });
 
+router.get("/:boardId/full", auth, async (req, res) => {
+  try {
+    const data = await service.getFullBoard(
+      req.params.boardId,
+      req.user.user_id
+    );
+    if (!data)
+      return res.status(404).json({ error: "Board not found or no access" });
+    res.json(data);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 export default router;
