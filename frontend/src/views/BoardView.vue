@@ -1,6 +1,7 @@
 <template>
   <div v-if="boardStore.board" class="board-view">
     <h2>{{ boardStore.board.board.title }}</h2>
+
     <div class="board-columns">
       <div v-for="col in boardStore.board.columns" :key="col.column_id" class="column">
         <h3>{{ col.name }}</h3>
@@ -10,7 +11,6 @@
           :list="col.cards"
           :group="{ name: 'cards', pull: true, put: true }"
           item-key="card_id"
-          @update:list="(newList) => (col.cards = newList)"
           @change="(evt) => onCardChange(evt, col.column_id)"
         >
           <template #item="{ element }">
@@ -20,107 +20,98 @@
           </template>
         </draggable>
 
-        <el-button size="small" @click="addCard(col.column_id)">+ Добавить</el-button>
+        <el-button size="small" @click="addCard(col.column_id)"> + Добавить </el-button>
       </div>
     </div>
   </div>
+
   <div v-else class="loading">
-    <el-icon><Loading /></el-icon> Загружаем…
+    <el-icon><Loading /></el-icon>&nbsp;Загружаем…
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
-import { socket } from '@/api/socket'
-import Card from '@/components/Card.vue'
-import { useBoardsStore } from '@/stores/boards'
-import { Loading } from '@element-plus/icons-vue'
 import draggable from 'vuedraggable'
 
-declare module 'vue' {
-  export interface GlobalComponents {
-    draggable: typeof draggable
-  }
-}
+import Card from '@/components/Card.vue'
+import { socket } from '@/api/socket'
+import { useBoardsStore } from '@/stores/boards'
+import { useCardsStore } from '@/stores/cards'
+import { Loading } from '@element-plus/icons-vue'
 
+/* ——— stores & route ——— */
 const boardStore = useBoardsStore()
-const route = useRoute()
-const boardId = route.params.id as string
+const cardsStore = useCardsStore()
+const boardId = Number(useRoute().params.id)
 
+/* ——— lifecycle ——— */
 onMounted(async () => {
   await boardStore.fetchBoard(boardId)
-  console.log(boardStore.board)
+  await cardsStore.fetchBoard(boardId)
 
   socket.connect()
   socket.emit('joinBoard', boardId)
 
-  socket.on('cardMoved', (data: any) => {
-    if (!boardStore.board) return
-    const moved = boardStore.board.columns
-      .flatMap((c) => c.cards)
-      .find((c) => c.card_id === data.id)
-    if (moved) boardStore.localMoveCard(moved, data.toColumnId, data.newIndex)
+  /* realtime: новый столбец */
+  socket.on('column:add', (p: any) => {
+    boardStore.addLocalColumn(p.column)
   })
 
-  socket.on('cardCreated', (data: any) => {
-    if (data.boardId === Number(boardId)) {
-      boardStore.addLocalCard(data.card, data.columnId)
-    }
+  /* realtime: новая карточка */
+  socket.on('card:add', (p: any) => {
+    boardStore.addLocalCard(p.card, p.column_id)
+  })
+
+  /* realtime: перемещение карточки */
+  socket.on('card:move', (d: any) => {
+    const moved = boardStore.board?.columns
+      .flatMap((c) => c.cards)
+      .find((c) => c.card_id === d.card_id)
+    if (moved) boardStore.localMoveCard(moved, d.to_column_id, d.new_position)
   })
 })
 
 onBeforeUnmount(() => {
   socket.emit('leaveBoard', boardId)
-  socket.off('cardMoved')
-  socket.off('cardCreated')
+  socket.off('column:add')
+  socket.off('card:add')
+  socket.off('card:move')
   socket.disconnect()
 })
 
+/* ——— drag & drop ——— */
 function onCardChange(evt: any, toColumnId: number) {
-  const { added, moved, removed } = evt
+  const { added, moved } = evt
 
-  if (added) {
-    const card = added.element
-    const newIndex = added.newIndex
-    socket.emit('cardMoved', {
-      id: card.card_id,
-      toColumnId,
-      newIndex,
-    })
-  }
+  // карточка перемещена или добавлена
+  const info = added || moved
+  if (!info) return
 
-  if (moved) {
-    const card = moved.element
-    const newIndex = moved.newIndex
-    const oldIndex = moved.oldIndex
-    socket.emit('cardMoved', {
-      id: card.card_id,
-      toColumnId,
-      newIndex,
-      oldIndex,
-    })
-  }
+  const card = info.element
+  const newPos = info.newIndex
+  cardsStore.moveCard(card.card_id, toColumnId, newPos)
+
+  socket.emit('card:move', {
+    card_id: card.card_id,
+    to_column_id: toColumnId,
+    new_position: newPos,
+  })
 }
 
-async function addCard(columnId: number) {
+/* ——— add card ——— */
+async function addCard(this: any, columnId: number) {
   const title = prompt('Название карточки')
   if (!title) return
 
-  const tempCard = {
-    card_id: Date.now(),
-    title,
-    description: '',
-    position: 0,
-    due_date: null,
-    priority: null,
-  }
-  boardStore.addLocalCard(tempCard, columnId)
-  this.$toast.success('Карточка добавлена (локально)')
-  socket.emit('cardCreated', {
-    boardId: Number(boardId),
-    columnId,
-    card: tempCard,
+  const newCard = await cardsStore.createCard(columnId, { title })
+  boardStore.addLocalCard(newCard, columnId)
+  this.$toast.success('Карточка создана')
+
+  socket.emit('card:add', {
+    column_id: columnId,
+    card: newCard,
   })
 }
 </script>

@@ -22,7 +22,7 @@ onMounted(() => {
   boardsStore.fetchBoards()
 })
 
-async function addBoard() {
+async function addBoard(this: any) {
   const name = prompt('Название доски')
   if (name) {
     try {

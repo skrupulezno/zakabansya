@@ -5,7 +5,7 @@ import router from '@/router'
 
 interface User {
   id: string
-  name: string /* ...*/
+  name: string
 }
 
 export const useAuthStore = defineStore('auth', {

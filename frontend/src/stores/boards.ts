@@ -52,6 +52,7 @@ export const useBoardsStore = defineStore('boards', {
       const res = await api.post('/boards', { name })
       this.boards.push(res.data)
     },
+
     /** локальное перемещение карточки (без запроса) */
     localMoveCard(card: Card, toColumnId: number, newIndex: number) {
       if (!this.board) return
@@ -66,6 +67,9 @@ export const useBoardsStore = defineStore('boards', {
       // вставить в целевую
       const dest = this.board.columns.find((c) => c.column_id === toColumnId)
       dest?.cards.splice(newIndex, 0, card)
+    },
+    addLocalColumn(column: Column) {
+      this.board?.columns.push(column)
     },
     addLocalCard(card: Card, columnId: number) {
       this.board?.columns.find((c) => c.column_id === columnId)?.cards.push(card)

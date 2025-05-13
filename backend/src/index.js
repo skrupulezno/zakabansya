@@ -55,7 +55,16 @@ app.use("/api/users", userRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 io.on("connection", (socket) => {
-  console.log("WebSocket connected:", socket.id);
+  console.log("WS connected:", socket.id);
+
+  socket.on("joinBoard", (boardId) => {
+    socket.join(`board-${boardId}`);
+  });
+
+  socket.on("leaveBoard", (boardId) => {
+    socket.leave(`board-${boardId}`);
+  });
+
   socket.on("disconnect", () => console.log("WS disconnected:", socket.id));
 });
 

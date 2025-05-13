@@ -7,7 +7,10 @@ const router = express.Router();
 router.post("/", auth, async (req, res) => {
   try {
     const col = await service.addColumn(req.body);
-    req.app.get("io").emit("columnCreated", col);
+    req.app
+      .get("io")
+      .to(`board-${col.board_id}`)
+      .emit("column:add", { column: col });
     res.status(201).json(col);
   } catch (e) {
     res.status(400).json({ error: e.message });

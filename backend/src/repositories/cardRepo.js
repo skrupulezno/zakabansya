@@ -3,17 +3,44 @@ import pool from "../config/db.js";
 export const createCard = async ({
   column_id,
   title,
-  position,
-  description,
-  priority,
-  due_date,
+  description = null,
+  priority = null,
+  due_date = null,
+  position = null,
 }) => {
-  const { rows } = await pool.query(
-    `INSERT INTO cards (column_id, title, position, description, priority, due_date)
-     VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
-    [column_id, title, position, description, priority, due_date]
-  );
-  return rows[0];
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    let pos = position;
+    if (pos === null || pos === undefined) {
+      const {
+        rows: [{ next }],
+      } = await client.query(
+        "SELECT COALESCE(MAX(position), -1) + 1 AS next FROM cards WHERE column_id = $1",
+        [column_id]
+      );
+      pos = next;
+    }
+
+    const {
+      rows: [card],
+    } = await client.query(
+      `INSERT INTO cards
+         (column_id, title, description, position, priority, due_date)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING *`,
+      [column_id, title, description, pos, priority, due_date]
+    );
+
+    await client.query("COMMIT");
+    return card;
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
 };
 
 export const listCardsByColumn = async (column_id) => {
