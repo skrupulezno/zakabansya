@@ -4,10 +4,6 @@ import * as userService from "../services/userService.js";
 
 const router = express.Router();
 
-/**
- * GET /api/users/me
- * Инфо о текущем пользователе
- */
 router.get("/me", auth, async (req, res) => {
   try {
     const user = await userService.getById(req.user.user_id);
@@ -17,10 +13,6 @@ router.get("/me", auth, async (req, res) => {
   }
 });
 
-/**
- * GET /api/users/:id
- * Инфо о пользователе по ID
- */
 router.get("/:id", auth, async (req, res) => {
   try {
     const user = await userService.getById(Number(req.params.id));
@@ -31,10 +23,6 @@ router.get("/:id", auth, async (req, res) => {
   }
 });
 
-/**
- * GET /api/users
- * Список всех пользователей
- */
 router.get("/", auth, async (_req, res) => {
   try {
     const users = await userService.getAll();

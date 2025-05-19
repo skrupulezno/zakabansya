@@ -1,19 +1,5 @@
 import pool from "../config/db.js";
 
-export const createBoard = async ({
-  title,
-  description,
-  owner_id,
-  visibility,
-}) => {
-  const { rows } = await pool.query(
-    `INSERT INTO boards (title, description, owner_id, visibility)
-     VALUES ($1,$2,$3,$4) RETURNING *`,
-    [title, description, owner_id, visibility]
-  );
-  return rows[0];
-};
-
 export const getBoardsForUser = async (user_id) => {
   const { rows } = await pool.query(
     `SELECT b.*,
@@ -81,6 +67,20 @@ LEFT JOIN cards c ON c.column_id = col.column_id
   );
 
   return { board, columns, members };
+};
+
+export const createBoard = async ({
+  title,
+  description,
+  owner_id,
+  visibility,
+}) => {
+  const { rows } = await pool.query(
+    `INSERT INTO boards (title, description, owner_id, visibility)
+     VALUES ($1,$2,$3,$4) RETURNING *`,
+    [title, description, owner_id, visibility]
+  );
+  return rows[0];
 };
 
 export const updateBoard = async ({
