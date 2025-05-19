@@ -17,14 +17,12 @@ const router = createRouter({
   routes,
 })
 
-// Глобальный guard: если маршрут требует auth, но нет токена – редирект на /login
 router.beforeEach((to, from, next) => {
   const auth = useAuthStore()
   const isAuth = !!auth.token
   if (to.meta.requiresAuth && !isAuth) {
     return next('/login')
   }
-  // Если авторизован, перенаправляем со /login или /register на /boards
   if ((to.path === '/login' || to.path === '/register') && isAuth) {
     return next('/')
   }

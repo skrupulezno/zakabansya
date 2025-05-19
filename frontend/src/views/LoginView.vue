@@ -1,35 +1,56 @@
-V<!-- src/views/LoginView.vue -->
+<!-- src/views/LoginView.vue -->
 <template>
-  <el-card class="login-card">
-    <h2>Вход</h2>
-    <el-form @submit.prevent="onSubmit">
-      <el-form-item label="Email">
-        <el-input v-model="form.email" placeholder="Email" />
-      </el-form-item>
-      <el-form-item label="Пароль">
-        <el-input type="password" v-model="form.password" placeholder="Пароль" />
-      </el-form-item>
-      <el-button type="primary" @click="onSubmit">Войти</el-button>
-    </el-form>
-  </el-card>
+  <div class="card login-card">
+    <div class="card-body">
+      <h2 class="card-title text-center mb-4">Вход</h2>
+      <form @submit.prevent="onSubmit">
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input
+            type="email"
+            id="email"
+            v-model="form.email"
+            class="form-control"
+            placeholder="Email"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Пароль</label>
+          <input
+            type="password"
+            id="password"
+            v-model="form.password"
+            class="form-control"
+            placeholder="Пароль"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Войти</button>
+        <a href="/register">Регистрация</a>
+      </form>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useToast } from 'vue-toastification'
 
 const form = reactive({ email: '', password: '' })
 const auth = useAuthStore()
 const router = useRouter()
+const toast = useToast()
 
-async function onSubmit(this: any) {
+async function onSubmit() {
   try {
     await auth.login(form)
-    this.$toast.success('Вход выполнен')
+    toast.success('Вход выполнен')
     router.push('/')
   } catch (err) {
-    this.$toast.error('Ошибка при входе')
+    toast.error('Ошибка при входе')
   }
 }
 </script>
@@ -38,5 +59,6 @@ async function onSubmit(this: any) {
 .login-card {
   max-width: 400px;
   margin: 50px auto;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 </style>
