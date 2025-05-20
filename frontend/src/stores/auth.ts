@@ -12,25 +12,15 @@ export const useAuthStore = defineStore('auth', {
     token: localStorage.getItem('token') || '',
     userId: localStorage.getItem('userId') || (null as string | null),
   }),
-
   getters: {
     isAuthenticated: (state) => !!state.token,
   },
-
   actions: {
-    /**
-     * Инициализация при запуске приложения:
-     * если есть токен, подгружаем данные пользователя
-     */
     async init() {
       if (this.token) {
         await this.fetchUser()
       }
     },
-
-    /**
-     * Логин: сохраняем токен и подгружаем профиль
-     */
     async login(credentials: { email: string; password: string }) {
       const res = await api.post('/auth/login', credentials)
       this.token = res.data.token
@@ -39,10 +29,6 @@ export const useAuthStore = defineStore('auth', {
       await this.fetchUser()
       router.push('/')
     },
-
-    /**
-     * Регистрация: сохраняем токен и подгружаем профиль
-     */
     async register(credentials: { name: string; email: string; password: string }) {
       const res = await api.post('/auth/register', credentials)
       this.token = res.data.token
@@ -51,10 +37,6 @@ export const useAuthStore = defineStore('auth', {
       await this.fetchUser()
       router.push('/')
     },
-
-    /**
-     * Запрос профиля текущего пользователя
-     */
     async fetchUser() {
       try {
         const res = await api.get('/users/me', {
@@ -69,10 +51,6 @@ export const useAuthStore = defineStore('auth', {
         this.logout()
       }
     },
-
-    /**
-     * Выход: очищаем хранилище и редирект на страницу логина
-     */
     logout() {
       this.token = ''
       this.userId = null

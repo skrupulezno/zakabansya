@@ -20,7 +20,6 @@ const draftName = ref('')
 
 const modalRef = ref<HTMLElement>()
 
-/* ---------- сокеты и загрузка ---------- */
 onMounted(async () => {
   await boardStore.fetchBoard(boardId)
 
@@ -48,27 +47,22 @@ onBeforeUnmount(() => {
   socket.disconnect()
 })
 
-/* открыть модалку */
 function openEditModal(col: Column) {
   editingCol.value = col
   draftName.value = col.name
-  // инициализируем/открываем
   const bsModal = Modal.getOrCreateInstance(modalRef.value!)
   bsModal.show()
 }
 
-/* сохранить изменения */
 async function saveColumn() {
   if (!editingCol.value) return
   const newName = draftName.value.trim()
   if (!newName) return
 
   await boardStore.editColumn(editingCol.value.column_id, { name: newName })
-  // сервер вернёт обновлённую колонку → updateLocalColumn уже выполнится
   Modal.getInstance(modalRef.value!)?.hide()
 }
 
-/* удалить колонку */
 async function removeColumn() {
   if (!editingCol.value) return
   if (!confirm('Удалить колонку вместе со всеми карточками?')) return
@@ -77,22 +71,19 @@ async function removeColumn() {
   Modal.getInstance(modalRef.value!)?.hide()
 }
 
-/* ---------- drag‑n‑drop карточек ---------- */
 function onCardChange(evt: any, toColumnId: number) {
   const info = evt.added || evt.moved
   if (!info) return
   moveCard(info.element.card_id, toColumnId, info.newIndex, socketId.value)
 }
 
-/* ---------- drag‑n‑drop столбцов ---------- */
 function onColumnChange(evt: any) {
   const info = evt.moved
   if (!info) return
   boardStore.localMoveColumn(info.oldIndex, info.newIndex)
-  boardStore.syncColumnsOrder() // один запрос на весь список
+  boardStore.syncColumnsOrder()
 }
 
-/* ---------- добавить карточку ---------- */
 async function addCard(columnId: number) {
   const title = prompt('Название карточки')
   if (!title) return
@@ -100,13 +91,11 @@ async function addCard(columnId: number) {
   boardStore.addLocalCard(newCard, columnId)
 }
 
-/* ---------- добавить колонку ---------- */
 async function addColumn() {
   const name = prompt('Название колонки')
   if (!name || !boardStore.board) return
   const position = boardStore.board.columns.length
   const newCol = await boardStore.createColumn(name, position)
-  // Локально добавляем сразу, не дожидаясь события сокета
   boardStore.addLocalColumn(newCol)
 }
 </script>

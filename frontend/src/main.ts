@@ -77,7 +77,7 @@ app.use(createPinia())
 app.use(router)
 app.use(Toast, {
   transition: 'Vue-Toastification__bounce',
-  maxToasts: 20,
+  maxToasts: 3,
   newestOnTop: true,
 })
 

@@ -52,11 +52,8 @@ export const useBoardsStore = defineStore('boards', {
       const res = await api.post('/boards', { name })
       this.boards.push(res.data)
     },
-
-    /** локальное перемещение карточки (без запроса) */
     localMoveCard(card: Card, toColumnId: number, newIndex: number) {
       if (!this.board) return
-      // удалить из старой колонки
       for (const col of this.board.columns) {
         const idx = col.cards.findIndex((c) => c.card_id === card.card_id)
         if (idx !== -1) {
@@ -64,11 +61,9 @@ export const useBoardsStore = defineStore('boards', {
           break
         }
       }
-      // вставить в целевую
       const dest = this.board.columns.find((c) => c.column_id === toColumnId)
       dest?.cards.splice(newIndex, 0, card)
     },
-
     localMoveColumn(fromIdx: number, toIdx: number) {
       if (!this.board) return
       const cols = this.board.columns
@@ -76,7 +71,6 @@ export const useBoardsStore = defineStore('boards', {
       cols.splice(toIdx, 0, moved)
       cols.forEach((c, i) => (c.position = i))
     },
-
     async syncColumnsOrder() {
       if (!this.board) return
       const body = this.board.columns.map(({ column_id, position }) => ({
@@ -85,7 +79,6 @@ export const useBoardsStore = defineStore('boards', {
       }))
       await api.patch('/columns/reorder', body)
     },
-
     addLocalColumn(col: Column) {
       this.board?.columns.push(col)
     },
@@ -98,8 +91,6 @@ export const useBoardsStore = defineStore('boards', {
       const col = this.board?.columns.find((c) => c.column_id === upd.column_id)
       if (col) Object.assign(col, upd)
     },
-
-    /** создать колонку на сервере */
     async createColumn(name: string, position: number) {
       if (!this.board) return
       const { data } = await api.post('/columns', {
@@ -107,17 +98,13 @@ export const useBoardsStore = defineStore('boards', {
         name,
         position,
       })
-      return data // вернём новую колонку
+      return data
     },
-
-    /** обновить колонку (name / position) */
     async editColumn(column_id: number, payload: { name?: string; position?: number }) {
       const { data } = await api.put(`/columns/${column_id}`, payload)
       this.updateLocalColumn(data)
       return data
     },
-
-    /** удалить колонку */
     async deleteColumn(column_id: number) {
       await api.delete(`/columns/${column_id}`)
       this.removeLocalColumn(column_id)
