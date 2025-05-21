@@ -1,4 +1,5 @@
 <template>
+  <InviteModal :board-id="currentBoardId" v-model="inviteOpen" />
   <div class="flex-grow-1 d-flex flex-column">
     <!-- Header -->
     <header
@@ -16,7 +17,7 @@
         </button>
       </div>
       <div class="d-flex align-items-center">
-        <button class="btn btn-primary me-2">
+        <button class="btn btn-primary me-2" @click="openModal()">
           <font-awesome-icon icon="user-plus" class="me-1" /> Пригласить команду
         </button>
         <button class="btn btn-link me-2">
@@ -42,7 +43,6 @@
     </header>
   </div>
   <div class="d-flex content">
-    <!-- Sidebar -->
     <nav
       :class="[
         'bg-light border-end p-3 d-flex flex-column sidebar',
@@ -107,7 +107,6 @@
       </div>
     </nav>
 
-    <!-- Main Area -->
     <main class="d-flex flex-grow-1 bg-light main">
       <slot />
     </main>
@@ -116,7 +115,12 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRoute } from 'vue-router'
+import InviteModal from '@/components/InviteModal.vue'
 
+const inviteOpen = ref(false)
+
+const currentBoardId = Number(useRoute().params.id)
 const isCollapsed = ref(false)
 const toggleSubmenu = ref(false)
 const workspaceName = 'тест'
@@ -128,6 +132,10 @@ const search = ref('')
 
 function toggleCollapse() {
   isCollapsed.value = !isCollapsed.value
+}
+
+function openModal() {
+  inviteOpen.value = true
 }
 </script>
 

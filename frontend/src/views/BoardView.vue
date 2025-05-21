@@ -7,9 +7,13 @@ import Card from '@/components/Card.vue'
 import Layout from '@/components/Layout.vue'
 import { socket } from '@/api/socket'
 import { useBoardsStore, type Column } from '@/stores/boards'
-import { createCard, moveCard } from '@/services/card.service'
+import { createCard, moveCard, deleteCard } from '@/services/card.service'
 
 import { Modal } from 'bootstrap'
+
+async function handleDelete(cardId: number) {
+  await deleteCard(cardId, boardId, socket.id)
+}
 
 const boardStore = useBoardsStore()
 const boardId = Number(useRoute().params.id)
@@ -96,14 +100,12 @@ async function addColumn() {
   if (!name || !boardStore.board) return
   const position = boardStore.board.columns.length
   const newCol = await boardStore.createColumn(name, position)
-  boardStore.addLocalColumn(newCol)
 }
 </script>
 
 <template>
   <Layout>
     <div v-if="boardStore.board" class="board-view p-3">
-      <!-- ===== СТОЛБЦЫ ===== -->
       <draggable
         class="board-columns d-flex gap-3"
         :list="boardStore.board.columns"
@@ -113,7 +115,6 @@ async function addColumn() {
         @change="onColumnChange"
         :handle="'.drag-handle'"
       >
-        <!-- Элемент‑шаблон столбца -->
         <template #item="{ element: col }">
           <div class="column" style="width: 268px">
             <h5 class="bg-white p-2 px-3 rounded mb-2 d-flex justify-content-between">
@@ -132,7 +133,6 @@ async function addColumn() {
               <font-awesome-icon icon="plus" /> Добавить
             </button>
 
-            <!-- ===== КАРТОЧКИ ВНУТРИ СТОЛБЦА ===== -->
             <draggable
               class="card-list min-vh-50"
               :list="col.cards"
@@ -142,14 +142,13 @@ async function addColumn() {
             >
               <template #item="{ element }">
                 <div class="draggable-card mb-2">
-                  <Card :card="element" />
+                  <Card :card="element" @delete-card="handleDelete" />
                 </div>
               </template>
             </draggable>
           </div>
         </template>
 
-        <!-- Кнопка «Добавить колонку» -->
         <template #footer>
           <div class="column">
             <div

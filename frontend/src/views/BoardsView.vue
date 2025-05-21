@@ -1,24 +1,22 @@
 <template>
-  <Layout>
-    <div class="boards-view p-3">
-      <h2>Мои доски</h2>
-      <button class="btn btn-primary mb-3" @click="addBoard">
-        <font-awesome-icon icon="plus" class="me-1" /> Создать доску
-      </button>
-      <hr />
-      <ul class="boards-list list-unstyled d-flex flex-wrap gap-3">
-        <li v-for="board in boardsStore.boards" :key="board.board_id" style="width: 200px">
-          <router-link :to="`/boards/${board.board_id}`" class="text-decoration-none">
-            <div class="card h-100">
-              <div class="card-body">
-                <h5 class="card-title text-truncate">{{ board.title }}</h5>
-              </div>
+  <div class="boards-view p-3">
+    <h2>Мои доски</h2>
+    <button class="btn btn-primary mb-3" @click="addBoard">
+      <font-awesome-icon icon="plus" class="me-1" /> Создать доску
+    </button>
+    <hr />
+    <ul class="boards-list list-unstyled d-flex flex-wrap gap-3">
+      <li v-for="board in boardsStore.boards" :key="board.board_id" style="width: 200px">
+        <router-link :to="`/boards/${board.board_id}`" class="text-decoration-none">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title text-truncate">{{ board.title }}</h5>
             </div>
-          </router-link>
-        </li>
-      </ul>
-    </div>
-  </Layout>
+          </div>
+        </router-link>
+      </li>
+    </ul>
+  </div>
 </template>
 
 <script setup lang="ts">

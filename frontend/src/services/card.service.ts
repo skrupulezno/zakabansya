@@ -36,6 +36,7 @@ export async function createCard(columnId: number, title: string, socketId: stri
   const { data } = await api.post('/cards', {
     column_id: columnId,
     title,
+    priority: 'low',
     socketId,
   })
   return data
@@ -52,5 +53,11 @@ export async function moveCard(
     new_column_id: toColumnId,
     new_position: newIndex,
     socketId,
+  })
+}
+
+export async function deleteCard(cardId: number, boardId: number, socketId: string): Promise<void> {
+  await api.delete(`/cards/${cardId}`, {
+    data: { board_id: boardId, socketId },
   })
 }

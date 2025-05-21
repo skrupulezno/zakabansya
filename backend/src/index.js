@@ -9,6 +9,7 @@ import boardRoutes from "./routes/boards.js";
 import columnRoutes from "./routes/columns.js";
 import cardRoutes from "./routes/cards.js";
 import userRoutes from "./routes/users.js";
+import boardMembersRouter from "./routes/board-members.js";
 
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
@@ -52,6 +53,7 @@ app.use("/api/boards", boardRoutes);
 app.use("/api/columns", columnRoutes);
 app.use("/api/cards", cardRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/boards", boardMembersRouter);
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 io.on("connection", (socket) => {

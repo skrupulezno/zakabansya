@@ -100,6 +100,19 @@ export const useBoardsStore = defineStore('boards', {
       })
       return data
     },
+    addLocalCard(card: Card, columnId: number, position?: number) {
+      if (!this.board) return
+
+      const column = this.board.columns.find((c) => c.column_id === columnId)
+      if (!column) return // колонка не найдена – выходим
+
+      const insertPos = position ?? column.cards.length
+      column.cards.splice(insertPos, 0, card) // вставляем карточку
+
+      // обновляем поле position у всех карточек колонки
+      column.cards.forEach((c, i) => (c.position = i))
+    },
+
     async editColumn(column_id: number, payload: { name?: string; position?: number }) {
       const { data } = await api.put(`/columns/${column_id}`, payload)
       this.updateLocalColumn(data)

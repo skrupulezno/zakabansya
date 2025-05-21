@@ -1,20 +1,20 @@
 <template>
-  <div class="card kanban-card mb-2">
+  <!-- .prevent отменяет стандартное контекстное меню -->
+  <div class="card kanban-card mb-2" @contextmenu.prevent="onRightClick">
     <div class="card-body p-2 d-flex flex-column" style="min-height: 100px">
-      <!-- Title and Priority at the top -->
+      <!-- Title -->
       <div class="d-flex justify-content-between align-items-start">
         <h6 class="card-title p-2">{{ card.title }}</h6>
       </div>
 
-      <!-- Author and Priority on first row, Date at bottom -->
+      <!-- Meta -->
       <div class="mt-auto text-muted fs-7">
         <div class="d-flex align-items-center justify-content-between">
-          <div class="d-flex justify-content-between align-items-center">
-            <div class="avatar">
-              {{ card.author }}
-            </div>
+          <div class="d-flex align-items-center gap-2">
+            <div class="avatar">{{ card.author }}</div>
+            {{ card.description }}
           </div>
-          <div class="d-flex gap align-items-end">
+          <div class="d-flex align-items-end gap-1">
             <div class="me-2 date">{{ formattedDate }}</div>
             <span v-if="card.priority" :class="['badge', 'bg-' + priorityVariant]">
               {{ card.priority }}
@@ -33,12 +33,17 @@ interface Card {
   card_id: number
   title: string
   author?: string
+  description?: string
   date?: string
   priority?: 'Low' | 'Medium' | 'High' | string
 }
 
 const props = defineProps<{ card: Card }>()
+const emit = defineEmits<{
+  (e: 'delete-card', cardId: number): void
+}>()
 
+/* ───── helpers ───── */
 const formattedDate = computed(() => {
   if (!props.card.date) return ''
   const d = new Date(props.card.date)
@@ -57,6 +62,13 @@ const priorityVariant = computed(() => {
       return 'primary'
   }
 })
+
+/* ───── handlers ───── */
+function onRightClick() {
+  if (confirm('Удалить эту карточку?')) {
+    emit('delete-card', props.card.card_id)
+  }
+}
 </script>
 
 <style scoped>

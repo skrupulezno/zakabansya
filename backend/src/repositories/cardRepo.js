@@ -170,8 +170,7 @@ export const updateCard = async ({ card_id, user_id, ...fields }) => {
   if (!setters.length) {
     throw new Error("No fields to update");
   }
-  // Проверка прав: присоеденяем к доске через колонку
-  // Для простоты: проверяем, что карточка принадлежит доске, где user — владелец
+
   const query = `
     WITH c AS (
       SELECT card_id, column_id
@@ -197,28 +196,25 @@ export const updateCard = async ({ card_id, user_id, ...fields }) => {
 };
 
 /**
- * Мягкое удаление карточки, если пользователь — владелец доски.
+ * Мягкое удаление без проверки прав.
+ * Возвращает { success, board_id }.
  */
-export const deleteCard = async ({ card_id, user_id }) => {
-  const { rowCount } = await pool.query(
+export const deleteCard = async ({ card_id }) => {
+  const { rows } = await pool.query(
     `
-    WITH c AS (
-      SELECT card_id, column_id
-      FROM cards
-      WHERE card_id = $1
-    ), b AS (
-      SELECT 1
-      FROM board_columns col
-      JOIN boards b ON b.board_id = col.board_id
-      JOIN c ON c.column_id = col.column_id
-      WHERE b.owner_id = $2
-    )
-    UPDATE cards
-      SET archived_at = NOW()
-    FROM b
-    WHERE cards.card_id = $1
+    UPDATE cards AS c
+       SET archived_at = NOW()
+    FROM board_columns col
+    WHERE c.card_id   = $1
+      AND col.column_id = c.column_id
+      AND c.archived_at IS NULL
+    RETURNING col.board_id;
     `,
-    [card_id, user_id]
+    [card_id]
   );
-  return rowCount > 0;
+
+  return {
+    success: rows.length > 0,
+    board_id: rows[0]?.board_id ?? null,
+  };
 };
