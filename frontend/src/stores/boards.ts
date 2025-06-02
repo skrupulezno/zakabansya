@@ -48,8 +48,8 @@ export const useBoardsStore = defineStore('boards', {
       const res = await api.get(`/boards/${board_id}/full`)
       this.board = res.data
     },
-    async createBoard(name: string) {
-      const res = await api.post('/boards', { name })
+    async createBoard(title: string) {
+      const res = await api.post('/boards', { title, visibility: 'public' })
       this.boards.push(res.data)
     },
     localMoveCard(card: Card, toColumnId: number, newIndex: number) {
