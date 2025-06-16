@@ -112,7 +112,6 @@ router.delete("/:id", auth, async (req, res) => {
     const { success, board_id } = await service.deleteCard({
       card_id: +req.params.id,
     });
-
     if (!success) {
       return res.status(404).json({ error: "Card not found" });
     }
@@ -128,7 +127,7 @@ router.delete("/:id", auth, async (req, res) => {
           .emit("card:delete", { card_id: +req.params.id })
       : io.to(room).emit("card:delete", { card_id: +req.params.id });
 
-    res.status(204).end();
+    res.status(201).json({ success: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
