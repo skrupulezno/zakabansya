@@ -17,3 +17,10 @@ export const addMany = async (boardId, userIds) => {
      ON CONFLICT DO NOTHING`
   );
 };
+
+export const remove = async (boardId, userId) => {
+  await pool.query(
+    `DELETE FROM board_members WHERE board_id = $1 AND user_id = $2`,
+    [boardId, userId],
+  );
+};

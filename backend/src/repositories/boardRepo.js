@@ -58,6 +58,11 @@ LEFT JOIN cards c ON c.column_id = col.column_id
   // 4) участники
   const { rows: members } = await pool.query(
     `
+    SELECT u.user_id, u.name, u.avatar_url, 'owner' as role
+      FROM boards b
+      JOIN users u ON u.user_id = b.owner_id
+     WHERE b.board_id = $1
+    UNION
     SELECT u.user_id, u.name, u.avatar_url, bm.role
       FROM board_members bm
       JOIN users u ON u.user_id = bm.user_id

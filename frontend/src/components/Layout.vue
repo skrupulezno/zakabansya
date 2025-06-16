@@ -7,6 +7,9 @@
       style="height: 58px"
     >
       <div class="d-flex align-items-center h-100 gap-3 space border-end position-relative">
+        <router-link to="/" class="btn btn-link p-0 me-2">
+          <font-awesome-icon icon="arrow-left" />
+        </router-link>
         <img :src="avatarUrl" alt="Avatar" class="rounded" width="40" height="40" />
         <span class="ms-2 fw-medium workspacename">{{ workspaceName }}</span>
         <button
@@ -38,7 +41,15 @@
         <button class="btn btn-link me-2">
           <font-awesome-icon icon="th-large" />
         </button>
-        <img :src="userAvatar" alt="Avatar" class="rounded-circle" width="32" height="32" />
+        <img
+          :src="userAvatar"
+          alt="Avatar"
+          class="rounded-circle"
+          width="32"
+          height="32"
+          style="cursor: pointer"
+          @click="$router.push('/profile')"
+        />
       </div>
     </header>
   </div>

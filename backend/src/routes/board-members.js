@@ -22,4 +22,19 @@ router.post("/:boardId/members", auth, async (req, res) => {
   }
 });
 
+router.delete("/:boardId/members/:userId", auth, async (req, res) => {
+  try {
+    const boardId = +req.params.boardId;
+    const userId = +req.params.userId;
+
+    const isOwner = await members.checkOwner(boardId, req.user.user_id);
+    if (!isOwner) return res.status(403).json({ error: "No access" });
+
+    await members.remove(boardId, userId);
+    res.status(204).end();
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
 export default router;

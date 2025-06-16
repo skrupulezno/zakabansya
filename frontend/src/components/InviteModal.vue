@@ -12,10 +12,32 @@
           <!-- Поиск -->
           <input v-model="search" class="form-control mb-2" placeholder="Поиск" />
 
+          <h6>Участники</h6>
+          <ul class="list-group mb-3">
+            <li
+              v-for="m in members"
+              :key="m.user_id"
+              class="list-group-item d-flex justify-content-between align-items-center"
+            >
+              <div class="d-flex align-items-center">
+                <img :src="m.avatar_url" class="rounded-circle me-2" width="32" height="32" />
+                <span>{{ m.name }}</span>
+                <small class="text-muted ms-2">{{ m.role === 'owner' ? 'админ' : 'участник' }}</small>
+              </div>
+              <button
+                v-if="auth.userId === ownerId && m.user_id !== ownerId"
+                class="btn btn-sm btn-outline-danger"
+                @click="remove(m.user_id)"
+              >
+                удалить
+              </button>
+            </li>
+          </ul>
+
           <!-- Список пользователей -->
           <div class="list-group overflow-auto mb-3" style="max-height: 300px">
             <label
-              v-for="u in filtered"
+              v-for="u in available"
               :key="u.user_id"
               class="list-group-item d-flex align-items-center"
             >
@@ -46,7 +68,9 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { fetchUsers, inviteUsers } from '../services/user.service'
+import { fetchUsers, inviteUsers, removeBoardMember } from '../services/user.service'
+import { useBoardsStore } from '@/stores/boards'
+import { useAuthStore } from '@/stores/auth'
 
 /* -------- props & v-model -------- */
 const props = defineProps<{ boardId: number; modelValue: boolean }>()
@@ -63,16 +87,31 @@ const show = computed({
 const users = ref<{ user_id: number; name: string; email: string; avatar_url: string }[]>([])
 const search = ref('')
 const selected = ref<number[]>([])
+const boardStore = useBoardsStore()
+const auth = useAuthStore()
 
 /* -------- computed -------- */
-const filtered = computed(() =>
-  users.value.filter((u) => u.name.toLowerCase().includes(search.value.toLowerCase())),
+const members = computed(() => boardStore.board?.members || [])
+const ownerId = computed(() => boardStore.board?.board.owner_id)
+const available = computed(() =>
+  users.value.filter(
+    (u) =>
+      u.user_id !== auth.userId &&
+      !members.value.some((m: any) => m.user_id === u.user_id) &&
+      u.name.toLowerCase().includes(search.value.toLowerCase()),
+  ),
 )
 
 /* -------- methods -------- */
 async function invite() {
   await inviteUsers(props.boardId, selected.value)
+  await boardStore.fetchBoard(props.boardId)
   close()
+}
+
+async function remove(id: number) {
+  await removeBoardMember(props.boardId, id)
+  await boardStore.fetchBoard(props.boardId)
 }
 
 function close() {
