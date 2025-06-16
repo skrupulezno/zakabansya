@@ -113,6 +113,18 @@ export const useBoardsStore = defineStore('boards', {
       column.cards.forEach((c, i) => (c.position = i))
     },
 
+    removeLocalCard(cardId: number) {
+      if (!this.board) return
+      for (const col of this.board.columns) {
+        const idx = col.cards.findIndex((c) => c.card_id === cardId)
+        if (idx !== -1) {
+          col.cards.splice(idx, 1)
+          col.cards.forEach((c, i) => (c.position = i))
+          break
+        }
+      }
+    },
+
     async editColumn(column_id: number, payload: { name?: string; position?: number }) {
       const { data } = await api.put(`/columns/${column_id}`, payload)
       this.updateLocalColumn(data)

@@ -13,6 +13,7 @@ import { Modal } from 'bootstrap'
 
 async function handleDelete(cardId: number) {
   await deleteCard(cardId, boardId, socket.id)
+  boardStore.removeLocalCard(cardId)
 }
 
 const boardStore = useBoardsStore()
@@ -43,6 +44,7 @@ onMounted(async () => {
       .find((c) => c.card_id === d.card_id)
     if (moved) boardStore.localMoveCard(moved, d.to_column_id, d.new_position)
   })
+  socket.on('card:delete', (p) => boardStore.removeLocalCard(p.card_id))
 })
 
 onBeforeUnmount(() => {
@@ -104,7 +106,7 @@ async function addColumn() {
 </script>
 
 <template>
-  <Layout>
+  <Layout :board-name="boardStore.board?.board.title">
     <div v-if="boardStore.board" class="board-view p-3">
       <draggable
         class="board-columns d-flex gap-3"

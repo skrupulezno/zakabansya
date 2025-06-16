@@ -1,5 +1,5 @@
 <template>
-  <div class="boards-view p-3">
+<div class="boards-view p-4">
     <h2>Мои доски</h2>
     <button class="btn btn-primary mb-3" @click="addBoard">
       <font-awesome-icon icon="plus" class="me-1" /> Создать доску
@@ -43,14 +43,20 @@ async function addBoard(this: any) {
 </script>
 
 <style scoped>
+.boards-view {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f9fafb, #e9ecef);
+}
 .boards-list {
   gap: 16px;
 }
 .card {
   cursor: pointer;
-  transition: transform 0.1s;
+  transition: transform 0.1s, box-shadow 0.1s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 .card:hover {
   transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
 </style>

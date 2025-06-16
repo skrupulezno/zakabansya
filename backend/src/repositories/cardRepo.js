@@ -26,10 +26,15 @@ export const createCard = async ({
     const {
       rows: [card],
     } = await client.query(
-      `INSERT INTO cards
-         (column_id, title, description, position, priority, due_date)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING *`,
+      `WITH ins AS (
+         INSERT INTO cards
+           (column_id, title, description, position, priority, due_date)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING *
+       )
+       SELECT ins.*, bc.board_id
+         FROM ins
+         JOIN board_columns bc ON bc.column_id = ins.column_id;`,
       [column_id, title, description, pos, priority, due_date]
     );
 

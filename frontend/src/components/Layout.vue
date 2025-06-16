@@ -114,7 +114,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import InviteModal from '@/components/InviteModal.vue'
 
@@ -123,7 +123,8 @@ const inviteOpen = ref(false)
 const currentBoardId = Number(useRoute().params.id)
 const isCollapsed = ref(false)
 const toggleSubmenu = ref(false)
-const workspaceName = 'тест'
+const props = defineProps<{ boardName?: string }>()
+const workspaceName = computed(() => props.boardName || 'Доска')
 const avatarUrl =
   'https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png?20210521171500' // URL аватара
 const userAvatar =
