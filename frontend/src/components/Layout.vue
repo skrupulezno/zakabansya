@@ -8,7 +8,7 @@
     >
       <div class="d-flex align-items-center h-100 gap-3 space border-end position-relative">
         <img :src="avatarUrl" alt="Avatar" class="rounded" width="40" height="40" />
-        <span class="ms-2 fw-medium">{{ workspaceName }}</span>
+        <span class="ms-2 fw-medium workspacename">{{ workspaceName }}</span>
         <button
           class="btn btn-sm btn-outline-secondary position-absolute button-close"
           @click="toggleCollapse"
@@ -113,7 +113,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import InviteModal from '@/components/InviteModal.vue'
@@ -123,7 +123,11 @@ const inviteOpen = ref(false)
 const currentBoardId = Number(useRoute().params.id)
 const isCollapsed = ref(false)
 const toggleSubmenu = ref(false)
-const props = defineProps<{ boardName?: string }>()
+// Props
+interface Props {
+  boardName: string
+}
+const props = defineProps<Props>()
 const workspaceName = computed(() => props.boardName || 'Доска')
 const avatarUrl =
   'https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png?20210521171500' // URL аватара
@@ -141,6 +145,13 @@ function openModal() {
 </script>
 
 <style scoped>
+.workspacename {
+  max-width: 100px;
+  white-space: nowrap; /* запрещаем перенос строк */
+  overflow: hidden; /* скрываем всё, что не влезает */
+  text-overflow: ellipsis;
+}
+
 .sidebar {
   height: calc(100dvh - 58px);
   flex-shrink: 0;
