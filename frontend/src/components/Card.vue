@@ -16,7 +16,12 @@
           </div>
           <div class="d-flex align-items-end gap-1">
             <div class="me-2 date">{{ formattedDate }}</div>
-            <span v-if="card.priority" :class="['badge', 'bg-' + priorityVariant]">
+            <span
+              v-if="card.priority"
+              :class="['badge', 'bg-' + priorityVariant]"
+              style="cursor: pointer"
+              @click="togglePriority"
+            >
               {{ card.priority }}
             </span>
           </div>
@@ -28,6 +33,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { socket } from '@/api/socket'
+import { updateCard } from '@/services/card.service'
+import { useBoardsStore } from '@/stores/boards'
 
 interface Card {
   card_id: number
@@ -43,6 +51,8 @@ const emit = defineEmits<{
   (e: 'delete-card', cardId: number): void
 }>()
 
+const boardStore = useBoardsStore()
+
 /* ───── helpers ───── */
 const formattedDate = computed(() => {
   if (!props.card.date) return ''
@@ -51,12 +61,12 @@ const formattedDate = computed(() => {
 })
 
 const priorityVariant = computed(() => {
-  switch (props.card.priority) {
-    case 'High':
+  switch (props.card.priority?.toLowerCase()) {
+    case 'high':
       return 'danger'
-    case 'Medium':
-      return 'warning'
-    case 'Low':
+    case 'medium':
+      return 'primary'
+    case 'low':
       return 'secondary'
     default:
       return 'primary'
@@ -68,6 +78,13 @@ function onRightClick() {
   if (confirm('Удалить эту карточку?')) {
     emit('delete-card', props.card.card_id)
   }
+}
+
+async function togglePriority() {
+  const current = props.card.priority?.toLowerCase()
+  const next = current === 'high' ? 'medium' : 'high'
+  const updated = await updateCard(props.card.card_id, { priority: next }, socket.id)
+  boardStore.updateLocalCard(updated)
 }
 </script>
 

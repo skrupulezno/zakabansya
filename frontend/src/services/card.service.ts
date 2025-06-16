@@ -56,8 +56,17 @@ export async function moveCard(
   })
 }
 
-export async function deleteCard(cardId: number, boardId: number, socketId: string): Promise<void> {
+export async function updateCard(
+  cardId: number,
+  payload: Record<string, unknown>,
+  socketId: string,
+): Promise<Card> {
+  const { data } = await api.put(`/cards/${cardId}`, { ...payload, socketId })
+  return data
+}
+
+export async function deleteCard(cardId: number, socketId: string): Promise<void> {
   await api.delete(`/cards/${cardId}`, {
-    data: { board_id: boardId, socketId },
+    data: { socketId },
   })
 }

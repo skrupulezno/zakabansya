@@ -125,6 +125,17 @@ export const useBoardsStore = defineStore('boards', {
       }
     },
 
+    updateLocalCard(upd: Partial<Card> & { card_id: number }) {
+      if (!this.board) return
+      for (const col of this.board.columns) {
+        const card = col.cards.find((c) => c.card_id === upd.card_id)
+        if (card) {
+          Object.assign(card, upd)
+          break
+        }
+      }
+    },
+
     async editColumn(column_id: number, payload: { name?: string; position?: number }) {
       const { data } = await api.put(`/columns/${column_id}`, payload)
       this.updateLocalColumn(data)

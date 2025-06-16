@@ -12,7 +12,7 @@ import { createCard, moveCard, deleteCard } from '@/services/card.service'
 import { Modal } from 'bootstrap'
 
 async function handleDelete(cardId: number) {
-  await deleteCard(cardId, boardId, socket.id)
+  await deleteCard(cardId, socket.id)
   boardStore.removeLocalCard(cardId)
 }
 
@@ -45,6 +45,7 @@ onMounted(async () => {
     if (moved) boardStore.localMoveCard(moved, d.to_column_id, d.new_position)
   })
   socket.on('card:delete', (p) => boardStore.removeLocalCard(p.card_id))
+  socket.on('card:update', (p) => boardStore.updateLocalCard(p.card))
 })
 
 onBeforeUnmount(() => {
