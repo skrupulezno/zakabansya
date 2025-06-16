@@ -7,9 +7,6 @@
       style="height: 58px"
     >
       <div class="d-flex align-items-center h-100 gap-3 space border-end position-relative">
-        <router-link to="/" class="btn btn-link p-0 me-2">
-          <font-awesome-icon icon="arrow-left" />
-        </router-link>
         <img :src="avatarUrl" alt="Avatar" class="rounded" width="40" height="40" />
         <span class="ms-2 fw-medium workspacename">{{ workspaceName }}</span>
         <button
@@ -68,13 +65,15 @@
         <li class="nav-item">
           <a href="#" class="nav-link text-dark d-flex align-items-center">
             <font-awesome-icon icon="tasks" class="me-2" />
-            <span v-if="!isCollapsed">Мои задачи</span>
+            <router-link to="/" v-if="!isCollapsed">
+              <span>Главная</span>
+            </router-link>
           </a>
         </li>
         <li>
           <a href="#" class="nav-link text-dark d-flex align-items-center">
             <font-awesome-icon icon="list" class="me-2" />
-            <span v-if="!isCollapsed">Все задачи</span>
+            <span v-if="!isCollapsed">Мои задач и</span>
           </a>
         </li>
         <li>
